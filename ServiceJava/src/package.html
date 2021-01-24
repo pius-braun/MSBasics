@@ -1,0 +1,19 @@
+<body>
+<b>ServiceJava Microservice</b><br>
+This file is part of the Demo project MSBasics - Microservices Basics<br>
+ServiceJava is a Microservce implemented in Java. It sends a counter every second to a Message Queue Interface.<br>
+This microservice is the Publisher side of the Message Queue.<br>
+It accepts a "reset" command via a REST interface.<br>
+The Message Queue service is provided by RabbitMQ. RabbitMQ is running as a docker image on localhost.<br>
+Steps to get RabbitMQ running:
+<ul><li>Install Docker Desktop from https://hub.docker.com/</li>
+<li>Start Docker Desktop</li>
+<li>Pull the RabbitMQ docker image: "docker pull rabbitmq"</li>
+<l1>create a custom network: "docker network create msbasics-network"</li>
+<li>Start RabbitMQ: "docker run -d --hostname msbasics-host --network msbasics-network --name rabbit-msbasics rabbitmq</li></ul>
+Steps to get ServiceJava running:
+<ul><li>Build image using the Dockerfile</li>
+<li>start image using "runservicejava.cmd"</li></ul>
+Author: Pius Braun<br>
+Copyright: GPLv3 https://www.gnu.org/licenses/gpl-3.0
+</body>

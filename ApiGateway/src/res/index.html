@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.counter {
+  font-family:'Courier New', Courier, monospace;
+  padding-left: 10px; 
+  padding-right: 10px;
+  border: 1px solid black;
+  background-color: white;
+}
+
+.box {
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+  float: left;
+  margin: 1%;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border: 2px solid black;
+  text-align: center;
+}
+
+.button {
+  padding: 8px 12px;
+  font-size: 15px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color:black;
+  background-color:lightgreen;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 5px darkgrey;
+}
+
+.button:hover {background-color:darkseagreen}
+
+.button:active {
+  background-color:darkseagreen;
+  box-shadow: 0 3px darkslategray;
+  transform: translateY(2px);
+}
+</style>
+</head>
+
+<body>
+<script>
+  let UID = ("0000" + Math.floor(Math.random() * 100000)).slice(-5);
+  let evtSource = new EventSource("sse/_" + UID);
+  evtSource.addEventListener("msg-count", showCounter);
+  evtSource.addEventListener("msg-reset", showReset);
+  evtSource.addEventListener("msg-summary", showSummary);
+  
+  function showCounter(m) {
+    document.getElementById("currentcounter").innerHTML = m.data;
+  }
+
+  function showReset(m) {
+    document.getElementById("latestcounter").innerHTML = JSON.parse(m.data).counter;
+    document.getElementById("timestamp").innerHTML = JSON.parse(m.data).timestamp;
+    document.getElementById("errormsg").innerHTML = JSON.parse(m.data).errormsg;
+  }
+
+  function showSummary(m) {
+    document.getElementById("summary").innerHTML = m.data;
+  }
+
+  window.onbeforeunload = function (e) {
+    $.ajax({
+      method: "GET",
+      url: "sse/close/_" + UID,
+    });
+    return undefined;
+  }
+</script>
+
+<div class="row">
+<div class="box" style="width: 94%; background-color: White; color: rgb(32, 3, 80)">
+  <h3>Microservice Demo</h3>
+  <p>A tiny collection of software pieces covering Microservice Architecture, Docker, REST, Message Queue, Web Sockets and Server Sent Events in 3 programming languages: C, Java, Python.</p>
+</div>
+</div>
+  
+<div class="row">
+<div class="box" style="width: 94%; background-color: LightGray;">
+  <h3>API Gateway</h3>
+  <p>The browser receives all data from API Gateway. 
+API Gateway receives data from the underlying services and forwards it to the browser using <b>Server Sent Events (SSE).</b> 
+API Gateway receives user interaction from the browser via <b>REST</b> and forwards it to the underlying services. 
+For the communication with the services, different protocols are used: <b>Message Queue</b> for ServiceJava, <b>REST</b> for ServiceC and ServicePython.</p>
+  </div>
+</div>
+
+<div class="row">
+
+<div class="box" style="width: 30%; min-height: 240px; background-color: lightgreen">
+<h3>ServiceJava</h3>
+<p>This service generates a running counter increasing every second and transfers it to <b>API Gateway</b> using the Message Queue <b>RabbitMQ</b>. 
+ServiceC resets the counter when clicking the <b>Reset</b> button.</p>
+<p>This is the counter value: <span class="counter"><span id="currentcounter">nnn</span></span></p>
+</div>
+
+<div class="box" style="width: 30%; min-height: 240px; background-color:lightblue;">
+<h3>ServiceC</h3>
+<p>This service uses native sockets to implement <b>REST</b> and <b>WebSocket</b> communication. It executes the reset command to ServiceJava and forwards the latest value.</p>
+<p style="margin-bottom: 0px"><button class="button" onClick="resetcmd()" id="resetBtn">Reset</button><span style="margin-left: 20px">
+    Latest counter value: <span class="counter" style="background-color: lightgray;"><span id="latestcounter">nnn</span></span></span></p>
+ <p style="font-size: 70%; margin-bottom: 0px">Timestamp: <span id="timestamp">n.a.</span></p>
+ <p style="font-size: 70%; margin-top: 0px">Error: <span id="errormsg">none</span></p>
+
+<script>
+  function resetcmd() {
+    var x = document.getElementById("resetBtn");
+    x.innerHTML = "resetting..";
+    x.disabled = true;
+    $.ajax({
+      method: "GET",
+      url: "reset",
+    });
+    x.disabled = false;
+    x.innerHTML ="Reset";
+  };
+</script>
+</div>
+
+<div class="box" style="width: 30%; min-height: 240px; background-color:lightyellow">
+<h3>ServicePython</h3>
+<p>This service receives the latest counter value from ServiceC via <b>WebSocket</b> Interface, collect up to 10 of them and 
+  delivers the average value to API Gateway via <b>REST</b> Interface.</p>
+  <p>This is the average value: <span class="counter"><span id="summary">.......</span></span></p>
+
+</div>
+
+</div>
+
+</body>
+</html>

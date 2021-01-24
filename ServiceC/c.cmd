@@ -1,0 +1,1 @@
+gcc sha1.cpp servicec.cc -o servicec.exe -I inc_win -L lib_win -l microhttpd -l ws2_32 -static -DTARGET_WIN
